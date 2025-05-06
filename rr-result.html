@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Round Robin Scheduling Results</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header>Round Robin Scheduling Results</header>
+  <nav>
+    <a href="index.html">Back to Home</a>
+  </nav>
+  <main>
+    <h3>Results:</h3>
+    <pre id="results"></pre>
+
+    <h3>Gantt Chart:</h3>
+    <div id="gantt-container">
+      <div id="gantt-id-row" class="gantt-row"></div>
+      <div id="gantt-time-row" class="gantt-row"></div>
+    </div>
+  </main>
+  <footer>
+    &copy; 2025 Process Scheduler by Cu_Team
+  </footer>
+
+  <script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const numProcesses = parseInt(urlParams.get('num-processes'));
+    const quantum = parseInt(urlParams.get('time-quantum'));
+    const processes = [];
+
+    for (let i = 1; i <= numProcesses; i++) {
+      const pid = urlParams.get(`process-${i}-id`);
+      const arrival = parseInt(urlParams.get(`process-${i}-arrival`));
+      const burst = parseInt(urlParams.get(`process-${i}-burst`));
+      processes.push({ pid, arrival, burst, remaining: burst, completion: 0 });
+    }
+
+    processes.sort((a, b) => a.arrival - b.arrival);
+
+    let currentTime = 0;
+    let queue = [];
+    let ganttIdContent = '', ganttTimeContent = '';
+    let completed = 0;
+    let log = [];
+
+    const visited = Array(numProcesses).fill(false);
+
+    while (completed < numProcesses) {
+      for (let i = 0; i < processes.length; i++) {
+        if (!visited[i] && processes[i].arrival <= currentTime) {
+          queue.push(i);
+          visited[i] = true;
+        }
+      }
+
+      if (queue.length === 0) {
+        ganttIdContent += `<div class="gantt-bar idle" style="width: 30px;">Idle</div>`;
+        ganttTimeContent += `<span class="time-slot" style="width: 30px;">${currentTime} - ${currentTime + 1}</span>`;
+        currentTime++;
+        continue;
+      }
+
+      const index = queue.shift();
+      const p = processes[index];
+      const execTime = Math.min(p.remaining, quantum);
+
+      ganttIdContent += `<div class="gantt-bar" style="width: ${execTime * 30}px;">${p.pid}</div>`;
+      ganttTimeContent += `<span class="time-slot" style="width: ${execTime * 30}px;">${currentTime} - ${currentTime + execTime}</span>`;
+
+      p.remaining -= execTime;
+      currentTime += execTime;
+
+      for (let i = 0; i < processes.length; i++) {
+        if (!visited[i] && processes[i].arrival <= currentTime) {
+          queue.push(i);
+          visited[i] = true;
+        }
+      }
+
+      if (p.remaining > 0) {
+        queue.push(index);
+      } else {
+        p.completion = currentTime;
+        completed++;
+      }
+    }
+
+    let resultText = "Round Robin Scheduling Result\n\n";
+    let totalWT = 0, totalTAT = 0;
+
+    processes.forEach(p => {
+      const turnaround = p.completion - p.arrival;
+      const waiting = turnaround - p.burst;
+      totalWT += waiting;
+      totalTAT += turnaround;
+      resultText += `Process ${p.pid}: Arrival Time = ${p.arrival}, Burst Time = ${p.burst}, Waiting Time = ${waiting}, Turnaround Time = ${turnaround}, Completion Time = ${p.completion}\n`;
+    });
+
+    resultText += `\nAverage Waiting Time: ${(totalWT / numProcesses).toFixed(2)}\nAverage Turnaround Time: ${(totalTAT / numProcesses).toFixed(2)}`;
+    document.getElementById('results').textContent = resultText;
+
+    document.getElementById('gantt-id-row').innerHTML = ganttIdContent;
+    document.getElementById('gantt-time-row').innerHTML = ganttTimeContent;
+  </script>
+
+  <style>
+    body {
+      background-color: #f4f4f4;
+      color: #333;
+      font-family: Arial, sans-serif;
+    }
+
+    header, footer {
+      text-align: center;
+      background-color: steelblue;
+      color: white;
+      padding: 10px 0;
+    }
+
+    nav a {
+      color: darkcyan;
+      text-decoration: none;
+      font-size: 16px;
+    }
+
+    main {
+      padding: 20px;
+      margin: 0 auto;
+      max-width: 900px;
+    }
+
+    h3 {
+      margin-top: 20px;
+      font-size: 18px;
+    }
+
+    #gantt-container {
+      display: flex;
+      flex-direction: column;
+      margin-top: 20px;
+      max-width: 100%;
+      overflow-x: auto;
+    }
+
+    .gantt-row {
+      display: flex;
+      position: relative;
+      width: max-content;
+    }
+
+    .gantt-bar {
+      background-color: #1e90ff;
+      height: 30px;
+      text-align: center;
+      color: white;
+      line-height: 30px;
+      font-size: 14px;
+      padding: 0 5px;
+      margin-left: 2px;
+    }
+
+    .gantt-bar.idle {
+      background-color: #aaa;
+    }
+
+    .gantt-row .time-slot {
+      height: 20px;
+      margin-left: 2px;
+      background-color: transparent;
+      display: inline-block;
+      text-align: center;
+    }
+
+    .gantt-row {
+      margin-bottom: 15px;
+    }
+
+    .gantt-row span {
+      display: inline-block;
+      text-align: center;
+      height: 20px;
+      margin-left: 2px;
+    }
+  </style>
+</body>
+</html>

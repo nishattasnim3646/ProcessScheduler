@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FCFS Scheduling Results</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header>FCFS Scheduling Results</header>
+  <nav>
+    <a href="index.html">Back to Home</a>
+  </nav>
+  <main>
+    <h3>Results:</h3>
+    <pre id="results"></pre>
+
+    <h3>Gantt Chart:</h3>
+    <div id="gantt-container">
+      <div id="gantt-id-row" class="gantt-row"></div>
+      <div id="gantt-time-row" class="gantt-row"></div>
+    </div>
+  </main>
+  <footer>
+    &copy; 2025 Process Scheduler by CU_Team
+  </footer>
+
+  <script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const numProcesses = parseInt(urlParams.get('num-processes'));
+    const processes = [];
+
+    for (let i = 1; i <= numProcesses; i++) {
+      const pid = urlParams.get(`process-${i}-id`);
+      const arrival = parseInt(urlParams.get(`process-${i}-arrival`));
+      const burst = parseInt(urlParams.get(`process-${i}-burst`));
+      processes.push({ pid, arrival, burst });
+    }
+    //sort arrival time
+    processes.sort((a, b) => a.arrival - b.arrival); 
+    
+    let results = "FCFS Scheduling Result\n\n";
+    let completionTime = 0;
+    let totalTurnaroundTime = 0;
+    let totalWaitingTime = 0;
+    let ganttIdContent = '';
+    let ganttTimeContent = '';
+    let currentTime = 0;
+
+    // Generate Gantt chart content 
+    processes.forEach(process => {
+      const waitingTime = currentTime - process.arrival;
+      totalWaitingTime += waitingTime;
+      
+      const turnaroundTime = waitingTime + process.burst;
+      totalTurnaroundTime += turnaroundTime;
+      
+      completionTime = currentTime + process.burst;
+      
+      results += `Process ${process.pid}: Arrival Time = ${process.arrival}, Burst Time = ${process.burst}, Waiting Time = ${waitingTime}, Turnaround Time = ${turnaroundTime}, Completion Time = ${completionTime}\n`;
+      
+      // If idle time
+      if (process.arrival > currentTime) {
+        ganttIdContent += `<div class="gantt-bar idle" style="width: ${(process.arrival - currentTime) * 30}px;"></div>`;
+        ganttTimeContent += `<span style="width: ${(process.arrival - currentTime) * 30}px;"></span>`;
+        currentTime = process.arrival;
+      }
+
+      //Process ID within Gantt bar
+      ganttIdContent += `
+        <div class="gantt-bar" style="width: ${process.burst * 30}px;" title="Process ${process.pid}: ${process.arrival} - ${process.arrival + process.burst}">
+          ${process.pid}
+        </div>
+      `;
+      ganttTimeContent += `
+        <span class="time-slot" style="width: ${process.burst * 30}px;" title="Start: ${currentTime} End: ${currentTime + process.burst}">
+          ${currentTime} - ${currentTime + process.burst}
+        </span>
+      `;
+      
+      currentTime += process.burst;
+    });
+
+    const avgWaitingTime = totalWaitingTime / numProcesses;
+    const avgTurnaroundTime = totalTurnaroundTime / numProcesses;
+
+    results += `\nAverage Waiting Time: ${avgWaitingTime.toFixed(2)}\nAverage Turnaround Time: ${avgTurnaroundTime.toFixed(2)}`;
+    
+    document.getElementById('results').textContent = results;
+
+
+    //gantt chart
+    document.getElementById('gantt-id-row').innerHTML = ganttIdContent;
+    document.getElementById('gantt-time-row').innerHTML = ganttTimeContent;
+  </script>
+
+  <style>
+    
+    body {
+      background-color: #f4f4f4;  
+      color: #333;
+      font-family: Arial, sans-serif;
+    }
+
+    header, footer {
+      text-align: center;
+      background-color: mediumseagreen;
+      color: white;
+      padding: 10px 0;
+    }
+
+    nav a {
+      color: mediumaquamarine;
+      text-decoration: none;
+      font-size: 16px;
+    }
+
+    main {
+      padding: 20px;
+      margin: 0 auto;
+      max-width: 900px;
+    }
+
+    h3 {
+      margin-top: 20px;
+      font-size: 18px;
+    }
+
+    
+    #gantt-container {
+      display: flex;
+      flex-direction: column;
+      margin-top: 20px;
+      max-width: 100%;
+      overflow-x: auto; 
+    }
+
+    .gantt-row {
+      display: flex;
+      position: relative;
+      width: max-content;
+    }
+
+    .gantt-bar {
+      background-color: #4caf50;
+      height: 30px;
+      text-align: center;
+      color: white;
+      line-height: 30px;
+      font-size: 14px;
+      padding: 0 5px;
+      margin-left: 2px;
+    }
+
+    .gantt-bar.idle {
+      background-color: #ccc;
+    }
+
+    .gantt-row .time-slot {
+      height: 20px;
+      margin-left: 2px;
+      background-color: transparent;
+      display: inline-block;
+      text-align: center;
+    }
+
+    .gantt-row {
+      margin-bottom: 10px;
+    }
+
+    .gantt-row span {
+      display: inline-block;
+      text-align: center;
+      height: 20px;
+      margin-left: 2px;
+    }
+
+    .gantt-bar {
+      display: inline-block;
+      height: 30px;
+      line-height: 30px;
+      position: relative;
+    }
+
+    .gantt-row .gantt-bar + span {
+      text-align: center;
+      height: 40px;
+    }
+
+    .gantt-row {
+      margin-bottom: 15px;
+    }
+
+    .gantt-row .time-slot {
+      display: inline-block;
+      width: 60px; 
+    }
+
+    
+    .gantt-row .time-slot:first-child {
+      margin-left: 0;
+    }
+  </style>
+</body>
+</html>

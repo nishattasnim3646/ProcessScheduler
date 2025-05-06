@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Round Robin Scheduling</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header>Round Robin Scheduling</header>
+  <nav>
+    <a href="index.html">Back to Home</a>
+  </nav>
+
+  <main> 
+    <h2>Enter Process Details</h2>
+    <form id="rr-form" method="GET" action="rr-result.html">
+      <label for="num-processes">Number of Processes:</label>
+      <input type="number" id="num-processes" name="num-processes" min="1" required />
+
+      <label for="time-quantum">Time Quantum:</label>
+      <input type="number" id="time-quantum" name="time-quantum" min="1" required />
+
+      <button type="button" onclick="generateProcessFields()">Generate Fields</button>
+      <br /><br />
+
+      <div id="processes-container"></div>
+
+      <button type="submit">Calculate Round Robin</button>
+    </form>
+  </main>
+
+  <footer>
+    &copy; 2025 Process Scheduler by Cu_Team
+  </footer>
+
+  <script>
+    function generateProcessFields() {
+      const container = document.getElementById('processes-container');
+      const num = parseInt(document.getElementById('num-processes').value);
+      container.innerHTML = '';
+
+      for (let i = 1; i <= num; i++) {
+        const newField = `
+          <label for="process-${i}-id">Process ${i} ID:</label>
+          <input type="text" id="process-${i}-id" name="process-${i}-id" required />
+          <label for="process-${i}-arrival">Arrival Time:</label>
+          <input type="number" id="process-${i}-arrival" name="process-${i}-arrival" required />
+          <label for="process-${i}-burst">Burst Time:</label>
+          <input type="number" id="process-${i}-burst" name="process-${i}-burst" required />
+          <br /><br />
+        `;
+        container.insertAdjacentHTML('beforeend', newField);
+      }
+    }
+  </script>
+</body>
+</html>

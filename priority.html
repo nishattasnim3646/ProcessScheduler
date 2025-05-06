@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Priority Scheduling</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header>Priority Scheduling</header>
+  <nav>
+    <a href="index.html">Back to Home</a>
+  </nav>
+  <main>
+    <h2>Enter Process Details</h2>
+    <form id="priority-form">
+      <label for="num-processes">Number of Processes:</label>
+      <input type="number" id="num-processes" name="num-processes" min="1" required />
+      <br /><br />
+      
+      <div id="processes-container">
+        <label for="process-1-id">Process 1 ID:</label>
+        <input type="text" id="process-1-id" name="process-1-id" required />
+        <label for="process-1-burst">Burst Time:</label>
+        <input type="number" id="process-1-burst" name="process-1-burst" required />
+        <label for="process-1-priority">Priority:</label>
+        <input type="number" id="process-1-priority" name="process-1-priority" required />
+        <br />
+      </div>
+      
+      <button type="button" onclick="generateProcessFields()">Generate Fields</button>
+      <br /><br />
+      
+      <button type="submit">Calculate Priority Scheduling</button>
+    </form>
+    
+    <h3>Results:</h3>
+    <pre id="results"></pre>
+  </main>
+  <footer>
+    &copy; 2025 Process Scheduler by Cu_Team
+  </footer>
+
+  <script>
+    let processCount = 1;
+
+    function generateProcessFields() {
+      processCount++;
+      const container = document.getElementById('processes-container');
+      const newField = `
+        <label for="process-${processCount}-id">Process ${processCount} ID:</label>
+        <input type="text" id="process-${processCount}-id" name="process-${processCount}-id" required />
+        <label for="process-${processCount}-burst">Burst Time:</label>
+        <input type="number" id="process-${processCount}-burst" name="process-${processCount}-burst" required />
+        <label for="process-${processCount}-priority">Priority:</label>
+        <input type="number" id="process-${processCount}-priority" name="process-${processCount}-priority" required />
+        <br />
+      `;
+      container.insertAdjacentHTML('beforeend', newField);
+    }
+
+    document.getElementById('priority-form').addEventListener('submit', function(event) {
+      event.preventDefault();
+      
+      const numProcesses = parseInt(document.getElementById('num-processes').value);
+      const processes = [];
+      
+      for (let i = 1; i <= numProcesses; i++) {
+        const pid = document.getElementById(`process-${i}-id`).value;
+        const burst = parseInt(document.getElementById(`process-${i}-burst`).value);
+        const priority = parseInt(document.getElementById(`process-${i}-priority`).value);
+        processes.push({ pid, burst, priority });
+      }
+
+      // Priority Scheduling algorithm logic here, just a placeholder for now
+      let results = "Priority Scheduling Result\n\n";
+      processes.forEach(process => {
+        results += `Process ${process.pid}: Burst Time = ${process.burst}, Priority = ${process.priority}\n`;
+      });
+
+      document.getElementById('results').textContent = results;
+    });
+  </script>
+</body>
+</html>
