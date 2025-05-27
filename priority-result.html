@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Priority Scheduling Result</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #000;
+      color: #fff;
+      padding: 20px;
+    }
+
+    a {
+      color: #00ffff;
+      text-decoration: none;
+      font-size: 16px;
+      display: inline-block;
+      margin-bottom: 20px;
+    }
+
+    h2, h3 {
+      text-align: center;
+      color: #f7efd0;
+      margin-bottom: 20px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+      background-color: #111;
+    }
+
+    th, td {
+      border: 1px solid #666;
+      padding: 10px;
+      text-align: center;
+    }
+
+    th {
+      background-color: #333;
+      color: #ddd6bd;
+    }
+
+    td {
+      color: #eee;
+    }
+
+    .gantt-chart {
+      display: flex;
+      justify-content: center;
+      margin-top: 30px;
+      flex-wrap: wrap;
+    }
+
+    .gantt-block {
+      border: 1px solid #999;
+      padding: 10px;
+      margin: 5px;
+      background-color: #222;
+      color: #fff;
+      text-align: center;
+      min-width: 60px;
+      border-radius: 5px;
+    }
+  </style>
+</head>
+<body>
+
+  <a href="index.html">&larr; Back to Home</a>
+
+  <h2>Priority Scheduling Result</h2>
+
+  <h3>Completion Table</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>Process</th>
+        <th>Priority</th>
+        <th>Arrival Time</th>
+        <th>Burst Time</th>
+        <th>Completion Time</th>
+        <th>Turnaround Time</th>
+        <th>Waiting Time</th>
+      </tr>
+    </thead>
+    <tbody id="resultTableBody"></tbody>
+  </table>
+
+  <h3>Gantt Chart Representation</h3>
+  <div class="gantt-chart" id="ganttChart"></div>
+
+  <script>
+    const processes = JSON.parse(localStorage.getItem("priorityProcesses")) || [];
+
+    processes.forEach(p => p.completed = false);
+
+    let currentTime = 0;
+    let completedCount = 0;
+    const n = processes.length;
+
+    const ganttChart = document.getElementById("ganttChart");
+    const resultTableBody = document.getElementById("resultTableBody");
+
+    while (completedCount < n) {
+      const available = processes.filter(p => p.arrival <= currentTime && !p.completed);
+      if (available.length === 0) {
+        currentTime++;
+        continue;
+      }
+
+      available.sort((a, b) => a.priority - b.priority);
+      const current = available[0];
+
+      const startTime = currentTime;
+      currentTime += current.burst;
+      const completionTime = currentTime;
+      const turnaroundTime = completionTime - current.arrival;
+      const waitingTime = turnaroundTime - current.burst;
+
+      current.completed = true;
+      completedCount++;
+
+      const block = document.createElement("div");
+      block.className = "gantt-block";
+      block.innerHTML = `<strong>${current.pid}</strong><br>${startTime} - ${completionTime}`;
+      ganttChart.appendChild(block);
+
+      const row = `<tr>
+        <td>${current.pid}</td>
+        <td>${current.priority}</td>
+        <td>${current.arrival}</td>
+        <td>${current.burst}</td>
+        <td>${completionTime}</td>
+        <td>${turnaroundTime}</td>
+        <td>${waitingTime}</td>
+      </tr>`;
+      resultTableBody.insertAdjacentHTML("beforeend", row);
+    }
+  </script>
+</body>
+</html>

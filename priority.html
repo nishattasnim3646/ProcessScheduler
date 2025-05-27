@@ -5,12 +5,81 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Priority Scheduling</title>
   <link rel="stylesheet" href="style.css" />
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+
+    header {
+      text-align: center;
+      font-size: 24px;
+      font-weight: bold;
+      padding: 20px;
+      background-color: #444;
+      color: white;
+    }
+
+    nav {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+    }
+
+    nav a {
+      color: #007BFF;
+      text-decoration: none;
+      font-size: 16px;
+      background-color: #f4f4f4;
+      padding: 6px 12px;
+      border-radius: 4px;
+    }
+
+    nav a:hover {
+      background-color: #ddd;
+    }
+
+    main {
+      padding: 20px;
+    }
+
+    form label {
+      display: inline-block;
+      width: 120px;
+      margin-top: 10px;
+    }
+
+    input[type="text"],
+    input[type="number"] {
+      margin-bottom: 10px;
+      padding: 5px;
+    }
+
+    button {
+      padding: 10px 15px;
+      margin-top: 10px;
+      cursor: pointer;
+    }
+
+    footer {
+      text-align: center;
+      padding: 15px;
+      background-color: #222;
+      color: #fff;
+      position: fixed;
+      width: 100%;
+      bottom: 0;
+    }
+  </style>
 </head>
 <body>
-  <header>Priority Scheduling</header>
   <nav>
-    <a href="index.html">Back to Home</a>
+    <a href="index.html">&larr; Back to Home</a>
   </nav>
+
+  <header>Priority Scheduling</header>
+
   <main>
     <h2>Enter Process Details</h2>
     <form id="priority-form">
@@ -21,6 +90,8 @@
       <div id="processes-container">
         <label for="process-1-id">Process 1 ID:</label>
         <input type="text" id="process-1-id" name="process-1-id" required />
+        <label for="process-1-arrival">Arrival Time:</label>
+        <input type="number" id="process-1-arrival" name="process-1-arrival" required />
         <label for="process-1-burst">Burst Time:</label>
         <input type="number" id="process-1-burst" name="process-1-burst" required />
         <label for="process-1-priority">Priority:</label>
@@ -33,10 +104,8 @@
       
       <button type="submit">Calculate Priority Scheduling</button>
     </form>
-    
-    <h3>Results:</h3>
-    <pre id="results"></pre>
   </main>
+
   <footer>
     &copy; 2025 Process Scheduler by Cu_Team
   </footer>
@@ -50,6 +119,8 @@
       const newField = `
         <label for="process-${processCount}-id">Process ${processCount} ID:</label>
         <input type="text" id="process-${processCount}-id" name="process-${processCount}-id" required />
+        <label for="process-${processCount}-arrival">Arrival Time:</label>
+        <input type="number" id="process-${processCount}-arrival" name="process-${processCount}-arrival" required />
         <label for="process-${processCount}-burst">Burst Time:</label>
         <input type="number" id="process-${processCount}-burst" name="process-${processCount}-burst" required />
         <label for="process-${processCount}-priority">Priority:</label>
@@ -67,18 +138,14 @@
       
       for (let i = 1; i <= numProcesses; i++) {
         const pid = document.getElementById(`process-${i}-id`).value;
+        const arrival = parseInt(document.getElementById(`process-${i}-arrival`).value);
         const burst = parseInt(document.getElementById(`process-${i}-burst`).value);
         const priority = parseInt(document.getElementById(`process-${i}-priority`).value);
-        processes.push({ pid, burst, priority });
+        processes.push({ pid, arrival, burst, priority });
       }
 
-      // Priority Scheduling algorithm logic here, just a placeholder for now
-      let results = "Priority Scheduling Result\n\n";
-      processes.forEach(process => {
-        results += `Process ${process.pid}: Burst Time = ${process.burst}, Priority = ${process.priority}\n`;
-      });
-
-      document.getElementById('results').textContent = results;
+      localStorage.setItem("priorityProcesses", JSON.stringify(processes));
+      window.location.href = "priority-result.html";
     });
   </script>
 </body>

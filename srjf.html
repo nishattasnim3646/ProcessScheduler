@@ -11,70 +11,77 @@
   <nav>
     <a href="index.html">Back to Home</a>
   </nav>
-  <main>
-    <h2>Enter Process Details</h2>
-    <form id="srjf-form">
-      <label for="num-processes">Number of Processes:</label>
-      <input type="number" id="num-processes" name="num-processes" min="1" required />
-      <br /><br />
-      
-      <div id="processes-container">
-        <label for="process-1-id">Process 1 ID:</label>
-        <input type="text" id="process-1-id" name="process-1-id" required />
-        <label for="process-1-burst">Burst Time:</label>
-        <input type="number" id="process-1-burst" name="process-1-burst" required />
-        <br />
-      </div>
-      
-      <button type="button" onclick="generateProcessFields()">Generate Fields</button>
-      <br /><br />
-      
-      <button type="submit">Calculate SRJF</button>
-    </form>
+ <main>
+  <h2>Enter Process Details</h2>
+  <form id="srjf-form">
+    <label for="num-processes">Number of Processes:</label>
+    <input type="number" id="num-processes" name="num-processes" min="1" required />
+    <button type="button" onclick="generateProcessFields()">Generate Fields</button>
+    <br /><br />
+
+    <div id="processes-container">
+      <!-- Fields will be generated here -->
+    </div>
     
-    <h3>Results:</h3>
-    <pre id="results"></pre>
-  </main>
+    <button type="submit">Calculate SRJF</button>
+  </form>
+</main>
+
   <footer>
     &copy; 2025 Process Scheduler by Cu_Team
   </footer>
 
   <script>
-    let processCount = 1;
+  function generateProcessFields() {
+    const container = document.getElementById('processes-container');
+    const num = parseInt(document.getElementById('num-processes').value);
+    container.innerHTML = ''; // Clear previous fields
 
-    function generateProcessFields() {
-      processCount++;
-      const container = document.getElementById('processes-container');
+    for (let i = 1; i <= num; i++) {
       const newField = `
-        <label for="process-${processCount}-id">Process ${processCount} ID:</label>
-        <input type="text" id="process-${processCount}-id" name="process-${processCount}-id" required />
-        <label for="process-${processCount}-burst">Burst Time:</label>
-        <input type="number" id="process-${processCount}-burst" name="process-${processCount}-burst" required />
-        <br />
+        <label for="process-${i}-id">Process ${i} ID:</label>
+        <input type="text" id="process-${i}-id" name="process-${i}-id" required />
+        <label for="process-${i}-arrival">Arrival Time:</label>
+        <input type="number" id="process-${i}-arrival" name="process-${i}-arrival" required />
+        <label for="process-${i}-burst">Burst Time:</label>
+        <input type="number" id="process-${i}-burst" name="process-${i}-burst" required />
+        <br /><br />
       `;
       container.insertAdjacentHTML('beforeend', newField);
     }
+  }
 
-    document.getElementById('srjf-form').addEventListener('submit', function(event) {
-      event.preventDefault();
-      
-      const numProcesses = parseInt(document.getElementById('num-processes').value);
-      const processes = [];
-      
-      for (let i = 1; i <= numProcesses; i++) {
-        const pid = document.getElementById(`process-${i}-id`).value;
-        const burst = parseInt(document.getElementById(`process-${i}-burst`).value);
-        processes.push({ pid, burst });
+  document.getElementById('srjf-form').addEventListener('submit', function(event) {
+    event.preventDefault(); // prevent normal submit
+
+    const num = parseInt(document.getElementById('num-processes').value);
+    if (!num || num <= 0) {
+      alert("Please enter a valid number of processes");
+      return;
+    }
+
+    const params = new URLSearchParams();
+    params.append("num-processes", num);
+
+    for (let i = 1; i <= num; i++) {
+      const pid = document.getElementById(`process-${i}-id`).value.trim();
+      const arrival = document.getElementById(`process-${i}-arrival`).value.trim();
+      const burst = document.getElementById(`process-${i}-burst`).value.trim();
+
+      if (!pid || arrival === "" || burst === "") {
+        alert(`Please fill all fields for process ${i}`);
+        return;
       }
 
-      // SRJF algorithm logic here, just a placeholder for now
-      let results = "SRJF Scheduling Result\n\n";
-      processes.forEach(process => {
-        results += `Process ${process.pid}: Burst Time = ${process.burst}\n`;
-      });
+      params.append(`process-${i}-id`, pid);
+      params.append(`process-${i}-arrival`, arrival);
+      params.append(`process-${i}-burst`, burst);
+    }
 
-      document.getElementById('results').textContent = results;
-    });
+    // Redirect to srjf_result.html with parameters
+    window.location.href = `srjf_result.html?${params.toString()}`;
+  });
   </script>
+
 </body>
 </html>

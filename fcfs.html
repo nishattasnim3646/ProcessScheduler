@@ -9,47 +9,47 @@
 <body>
   <header>FCFS Scheduling</header>
   <nav>
-    <a href="index.html">Back to Home</a>
+    <a href="index.html"> Back to Home</a>
   </nav>
-
-  <main> 
+  <main>
     <h2>Enter Process Details</h2>
-    <form id="fcfs-form" method="GET" action="fcfs-result.html">
-      <label for="num-processes">Number of Processes:</label>
-      <input type="number" id="num-processes" name="num-processes" min="1" required />
-      <button type="button" onclick="generateProcessFields()">Generate Fields</button>
-      <br /><br />
-
-      <div id="processes-container"></div>
-
-      <button type="submit">Calculate FCFS</button>
+    <form action="fcfs-result.html" method="get" onsubmit="return saveInput()">
+      <label>Number of Processes:
+        <input type="number" id="numProcesses" min="1" max="20" required />
+      </label>
+      <div id="processInputs"></div>
+      <button type="submit">Simulate</button>
     </form>
   </main>
-
   <footer>
     &copy; 2025 Process Scheduler by Cu_Team
   </footer>
 
   <script>
-    function generateProcessFields() {
-      const container = document.getElementById('processes-container');
-      const num = parseInt(document.getElementById('num-processes').value);
-
-      // Clear previous fields if re-generating
+    document.getElementById('numProcesses').addEventListener('input', function () {
+      const count = parseInt(this.value);
+      const container = document.getElementById('processInputs');
       container.innerHTML = '';
-
-      for (let i = 1; i <= num; i++) {
-        const newField = `
-          <label for="process-${i}-id">Process ${i} ID:</label>
-          <input type="text" id="process-${i}-id" name="process-${i}-id" required />
-          <label for="process-${i}-arr${i}ival">Arrival Time:</label>
-          <input type="number" id="process-${i}-arrival" name="process-${i}-arrival" required />
-          <label for="process-${i}-burst">Burst Time:</label>
-          <input type="number" id="process-${i}-burst" name="process-${i}-burst" required />
-          <br /><br />
+      for (let i = 0; i < count; i++) {
+        container.innerHTML += `
+          <h4>Process ${i + 1}</h4>
+          <label>Arrival Time: <input type="number" name="arrival${i}" required></label>
+          <label>Burst Time: <input type="number" name="burst${i}" required></label>
+          <br/><br/>
         `;
-        container.insertAdjacentHTML('beforeend', newField);
       }
+    });
+
+    function saveInput() {
+      const count = parseInt(document.getElementById('numProcesses').value);
+      const processList = [];
+      for (let i = 0; i < count; i++) {
+        const arrival = parseInt(document.querySelector(`[name=arrival${i}]`).value);
+        const burst = parseInt(document.querySelector(`[name=burst${i}]`).value);
+        processList.push({ pid: i + 1, arrival, burst });
+      }
+      localStorage.setItem('fcfsData', JSON.stringify(processList));
+      return true;
     }
   </script>
 </body>
