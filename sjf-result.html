@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>RR Result</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header>Round Robin Results</header>
+  <nav><a href="index.html" class="back-link">← Back</a></nav>
+  <main>
+    <h2>Simulation Output</h2>
+    <div id="output"></div>
+
+    <h3>Gantt Chart (Div-based)</h3>
+    <div class="gantt-container" id="ganttContainer">
+      <span class="start-time">0</span>
+    </div>
+
+    <h3>Gantt Chart (Canvas-based)</h3>
+    <div class="gantt-scroll-container">
+  <canvas id="ganttCanvas" height="150"></canvas>
+</div>
+  </main>
+  <footer>&copy; 2025 Process Scheduler by Cu_Team</footer>
+
+  <script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const num = parseInt(urlParams.get("num-processes"));
+    const tq = parseInt(urlParams.get("time-quantum"));
+
+    let processes = [];
+
+    for (let i = 1; i <= num; i++) {
+      processes.push({
+        id: urlParams.get(`process-${i}-id`),
+        arrival: parseInt(urlParams.get(`process-${i}-arrival`)),
+        burst: parseInt(urlParams.get(`process-${i}-burst`)),
+        remaining: parseInt(urlParams.get(`process-${i}-burst`)),
+        complete: 0
+      });
+    }
+
+    processes.sort((a, b) => a.arrival - b.arrival);
+
+    let time = 0, queue = [], chart = [], finished = 0;
+
+    while (finished < num) {
+      for (let p of processes) {
+        if (p.arrival <= time && !queue.includes(p) && p.remaining > 0) {
+          queue.push(p);
+        }
+      }
+
+      if (queue.length === 0) {
+        time++;
+        continue;
+      }
+
+      const current = queue.shift();
+      const runTime = Math.min(current.remaining, tq);
+      chart.push({ id: current.id, start: time, end: time + runTime });
+
+      time += runTime;
+      current.remaining -= runTime;
+
+      for (let p of processes) {
+        if (p.arrival <= time && !queue.includes(p) && p.remaining > 0 && p !== current) {
+          queue.push(p);
+        }
+      }
+
+      if (current.remaining > 0) {
+        queue.push(current);
+      } else {
+        current.complete = time;
+        finished++;
+      }
+    }
+
+    // Output table
+    let html = `<table><thead><tr><th>Process</th><th>Arrival</th><th>Burst</th><th>Completion</th><th>Turnaround</th><th>Waiting</th></tr></thead><tbody>`;
+    for (let p of processes) {
+      const tat = p.complete - p.arrival;
+      const wt = tat - p.burst;
+      html += `<tr><td>${p.id}</td><td>${p.arrival}</td><td>${p.burst}</td><td>${p.complete}</td><td>${tat}</td><td>${wt}</td></tr>`;
+    }
+    html += `</tbody></table>`;
+    document.getElementById('output').innerHTML = html;
+
+    // Div-based Gantt chart
+    const ganttContainer = document.getElementById('ganttContainer');
+    ganttContainer.innerHTML = '<span class="start-time">0</span>';
+
+    chart.forEach(segment => {
+      const block = document.createElement('div');
+      block.classList.add('gantt-block');
+      block.dataset.end = segment.end;
+      block.textContent = segment.id;
+      block.style.flexGrow = segment.end - segment.start;
+      ganttContainer.appendChild(block);
+    });
+
+    // Canvas-based Gantt chart
+    const canvas = document.getElementById("ganttCanvas");
+    const ctx = canvas.getContext("2d");
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    const unit = 40;
+    const totalTime = chart[chart.length - 1].end; // last end time in chart
+    canvas.width = totalTime * unit + 40; // extra padding
+    let x = 30;
+    ctx.font = "18px 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif";
+    ctx.textAlign = "center";
+
+    chart.forEach(seg => {
+      const width = (seg.end - seg.start) * unit;
+
+      // Draw rounded rectangle with shadow
+      ctx.shadowColor = "rgba(0, 0, 0, 0.15)";
+      ctx.shadowBlur = 6;
+      ctx.shadowOffsetX = 2;
+      ctx.shadowOffsetY = 2;
+
+      const radius = 12;
+      ctx.fillStyle = "#4CAF50";
+      ctx.beginPath();
+      ctx.moveTo(x + radius, 60);
+      ctx.lineTo(x + width - radius, 60);
+      ctx.quadraticCurveTo(x + width, 60, x + width, 60 + radius);
+      ctx.lineTo(x + width, 110 - radius);
+      ctx.quadraticCurveTo(x + width, 110, x + width - radius, 110);
+      ctx.lineTo(x + radius, 110);
+      ctx.quadraticCurveTo(x, 110, x, 110 - radius);
+      ctx.lineTo(x, 60 + radius);
+      ctx.quadraticCurveTo(x, 60, x + radius, 60);
+      ctx.closePath();
+      ctx.fill();
+
+      // Text without shadow
+      ctx.shadowColor = "transparent";
+      ctx.fillStyle = "white";
+      ctx.fillText(seg.id, x + width / 2, 90);
+
+      // Time markers below bars
+      ctx.fillStyle = "#333";
+      ctx.font = "14px 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif";
+      ctx.fillText(seg.start, x, 130);
+
+      x += width;
+    });
+
+    // Last time marker
+    if (chart.length > 0) {
+      ctx.fillText(chart[chart.length - 1].end, x, 130);
+    }
+  </script>
+</body>
+</html>
