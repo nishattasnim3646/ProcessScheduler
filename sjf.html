@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SJF Scheduling</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header>SJF (Shortest Job First) Scheduling</header>
+  <main>
+    <h2>Enter Process Details</h2>
+    <form id="sjfForm">
+      <label for="numProcesses">Number of Processes:</label>
+      <input type="number" id="numProcesses" name="numProcesses" min="1" required />
+      <button type="button" onclick="generateInputs()">Next</button>
+    </form>
+    <div id="processInputs"></div>
+  </main>
+  <footer>&copy; 2025 Process Scheduler by Cu_Team</footer>
+
+  <script>
+    function generateInputs() {
+      const num = parseInt(document.getElementById("numProcesses").value);
+      const container = document.getElementById("processInputs");
+      container.innerHTML = "";
+
+      if (num < 1) return;
+
+      let html = `<table><tr><th>Process</th><th>Arrival Time</th><th>Burst Time</th></tr>`;
+      for (let i = 0; i < num; i++) {
+        html += `
+          <tr>
+            <td>P${i + 1}</td>
+            <td><input type="number" id="at${i}" required /></td>
+            <td><input type="number" id="bt${i}" required /></td>
+          </tr>`;
+      }
+      html += `</table><br/><button onclick="submitData(${num})">Simulate</button>`;
+      container.innerHTML = html;
+    }
+
+    function submitData(n) {
+      const processes = [];
+      for (let i = 0; i < n; i++) {
+        const at = parseInt(document.getElementById(`at${i}`).value);
+        const bt = parseInt(document.getElementById(`bt${i}`).value);
+        if (isNaN(at) || isNaN(bt)) {
+          alert("Please enter all arrival and burst times.");
+          return;
+        }
+        processes.push({ id: i + 1, at, bt });
+      }
+      localStorage.setItem("sjfProcesses", JSON.stringify(processes));
+      window.location.href = "sjf-result.html";
+    }
+  </script>
+</body>
+</html>
